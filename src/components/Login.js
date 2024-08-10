@@ -1,11 +1,34 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Header from "./Header";
+import {
+  ValidateEmail,
+  ValidatePassword,
+  ValidateFullName,
+} from "../utils/Validate";
 
 const Login = () => {
   const [isSignUpForm, setIsSignUpForm] = useState(true);
+  const [emailErrorMessage, setEmailErrorMessage] = useState(null);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState(null);
+  const [fullNameErrorMessage, setfullNameErrorMessage] = useState(null);
+
+  const emailInput = useRef(null);
+  const passwordInput = useRef(null);
+  const fullNameInput = useRef(null);
 
   const toggleSignUpForm = () => {
     setIsSignUpForm(!isSignUpForm);
+  };
+
+  const handleButtonClick = () => {
+    if (isSignUpForm) {
+      const fullNameError = ValidateFullName(fullNameInput?.current?.value);
+      setfullNameErrorMessage(fullNameError);
+    }
+    const emailError = ValidateEmail(emailInput?.current?.value);
+    setEmailErrorMessage(emailError);
+    const passwordError = ValidatePassword(passwordInput?.current?.value);
+    setPasswordErrorMessage(passwordError);
   };
 
   return (
@@ -17,30 +40,57 @@ const Login = () => {
           alt="bg-Image-Banner"
         />
       </div>
-      <form className="absolute w-[30%] bg-black my-28 mx-auto right-0 left-0 text-white p-16 bg-opacity-80 rounded-md">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        className="absolute w-[30%] bg-black my-28 mx-auto right-0 left-0 text-white p-16 bg-opacity-80 rounded-md"
+      >
         <h2 className="font-bold text-3xl mb-4">
           {isSignUpForm ? "Sign Up" : "Sign In"}
         </h2>
-        {isSignUpForm &&
-          <input
-          type="text"
-          placeholder="Full Name"
-          className="w-full my-2 py-3 rounded-sm bg-black border border-gray-200 bg-opacity-10 placeholder: p-3"
-          />
-        }
+        {isSignUpForm && (
+          <>
+            <input
+              type="text"
+              ref={fullNameInput}
+              placeholder="Full Name"
+              className={`w-full my-2 py-3 rounded-sm bg-black border border-gray-200 bg-opacity-10 placeholder: p-3 ${
+                fullNameErrorMessage && "border border-redErrorColor"
+              }`}
+            />
+            <p className="errorMsg mb-2 text-sm text-redErrorColor">
+              {fullNameErrorMessage}
+            </p>
+          </>
+        )}
         <input
           type="text"
+          ref={emailInput}
           placeholder="Username"
-          className="w-full my-2 py-3 rounded-sm bg-black border border-gray-200 bg-opacity-10 placeholder: p-3"
+          className={`w-full my-2 py-3 rounded-sm bg-black border border-gray-200 bg-opacity-10 placeholder: p-3 ${
+            emailErrorMessage && "border border-redErrorColor"
+          }`}
         />
+        <p className="errorMsg mb-2 text-sm text-redErrorColor">
+          {emailErrorMessage}
+        </p>
         <input
           type="password"
+          ref={passwordInput}
           placeholder="Password"
-          className="w-full my-2 py-3 rounded-sm bg-black border border-gray-200 bg-opacity-10 placeholder: p-3"
+          className={`w-full my-2 py-3 rounded-sm bg-black border border-gray-200 bg-opacity-10 placeholder: p-3 + ${
+            passwordErrorMessage && "border border-redErrorColor"
+          }`}
         />
-        <button className="bg-red-700 rounded-lg p-2 my-2 w-full">
+        <p className="errorMsg mb-2 text-sm text-redErrorColor">
+          {passwordErrorMessage}
+        </p>
+        <button
+          className="bg-red-700 rounded-lg p-2 my-2 w-full"
+          onClick={handleButtonClick}
+        >
           {isSignUpForm ? "Sign Up" : "Sign In"}
         </button>
+
         <h3 className="my-4 cursor-pointer">
           {!isSignUpForm ? (
             <>
