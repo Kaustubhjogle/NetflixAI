@@ -5,30 +5,86 @@ import {
   ValidatePassword,
   ValidateFullName,
 } from "../utils/Validate";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "../utils/firebase";
 
 const Login = () => {
   const [isSignUpForm, setIsSignUpForm] = useState(true);
   const [emailErrorMessage, setEmailErrorMessage] = useState(null);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState(null);
   const [fullNameErrorMessage, setfullNameErrorMessage] = useState(null);
+  const [mainErrorMessage, setMainErrorMessage] = useState(null);
 
   const emailInput = useRef(null);
   const passwordInput = useRef(null);
   const fullNameInput = useRef(null);
 
   const toggleSignUpForm = () => {
+    setMainErrorMessage(null)
     setIsSignUpForm(!isSignUpForm);
   };
 
   const handleButtonClick = () => {
-    if (isSignUpForm) {
+    if (isSignUpForm && fullNameInput?.current?.value) {
       const fullNameError = ValidateFullName(fullNameInput?.current?.value);
       setfullNameErrorMessage(fullNameError);
     }
-    const emailError = ValidateEmail(emailInput?.current?.value);
-    setEmailErrorMessage(emailError);
-    const passwordError = ValidatePassword(passwordInput?.current?.value);
-    setPasswordErrorMessage(passwordError);
+    if (emailInput?.current?.value) {
+      const emailError = ValidateEmail(emailInput?.current?.value);
+      setEmailErrorMessage(emailError);
+    }
+    if (passwordInput?.current?.value) {
+      const passwordError = ValidatePassword(passwordInput?.current?.value);
+      setPasswordErrorMessage(passwordError);
+    }
+
+    if (
+      !fullNameErrorMessage &&
+      !emailErrorMessage &&
+      !passwordErrorMessage &&
+      isSignUpForm
+    ) {
+      createUserWithEmailAndPassword(
+        auth,
+        emailInput?.current?.value,
+        passwordInput?.current?.value
+      )
+        .then((userCredential) => {
+          // Sign Up
+          const user = userCredential.user;
+          console.log("SignUp Success", user);
+
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setMainErrorMessage(error?.message)
+          // ..
+        });
+    } else if (!emailErrorMessage && !passwordErrorMessage && !isSignUpForm) {
+      //Sign In
+      signInWithEmailAndPassword(
+        auth,
+        emailInput?.current?.value,
+        passwordInput?.current?.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log('Sign In Success', user);
+          
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setMainErrorMessage(error?.message)
+        });
+    }
   };
 
   return (
@@ -90,7 +146,9 @@ const Login = () => {
         >
           {isSignUpForm ? "Sign Up" : "Sign In"}
         </button>
-
+        <p className="mainErrorMsg mb-2 text-sm text-redErrorColor">
+          {mainErrorMessage}
+        </p>
         <h3 className="my-4 cursor-pointer">
           {!isSignUpForm ? (
             <>
